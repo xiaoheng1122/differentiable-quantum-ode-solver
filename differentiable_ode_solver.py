@@ -41,7 +41,7 @@ reproduced in the accompanying README and notebook.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import json
 from pathlib import Path
 from typing import Callable, Sequence
@@ -437,7 +437,6 @@ def _train_case_torch(case: ODECase, config: ExperimentConfig, seed_offset: int 
 
     theta_rows = best_theta.reshape(parameter_shape)
     initial = np.asarray(case.initial, dtype=float)
-    raw_at_x0 = np.asarray([float(model.expectation(torch.zeros(1, dtype=torch.float64), torch.tensor(row, dtype=torch.float64))[0]) for row in theta_rows])
     prediction, derivative = [], []
     for coordinate in holdout:
         one_point = torch.tensor([coordinate], dtype=torch.float64)
