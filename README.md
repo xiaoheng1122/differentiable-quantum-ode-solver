@@ -30,35 +30,35 @@ For each output component, let $f_\theta(x)$ denote the expectation value of a
 parameterized quantum circuit. The initial-value condition is imposed with the
 floating construction
 
-$$
+```math
 \widehat{u}_\theta(x)=u_0+f_\theta(x)-f_\theta(x_0).
-$$
+```
 
 The input coordinate is encoded by a Chebyshev tower. For qubit $q$,
 
-$$
+```math
 \phi_q(x)=2(q+1)\arccos(x), \qquad q=0,\ldots,n-1.
-$$
+```
 
 The feature rotations are followed by trainable `RZ-RX-RZ` blocks and a
 nearest-neighbour CNOT chain. The measured observable is the total
 $Z$-magnetization. Since the feature gates are RY rotations, the coordinate
 derivative is evaluated with the parameter-shift identity
 
-$$
+```math
 \partial_x f_\theta(x)=
 \sum_q \frac{\partial\phi_q}{\partial x}
 \frac{f_\theta(\phi_q+\pi/2)-f_\theta(\phi_q-\pi/2)}{2}.
-$$
+```
 
 For collocation coordinates $x_j$, the optimizer minimizes the equation
 residual rather than a solution label:
 
-$$
+```math
 \mathcal{L}(\theta)=\frac{1}{N}\sum_{j=1}^{N}
 \left\|R\!\left(x_j,\widehat{\boldsymbol{u}}_\theta(x_j),
 \partial_x\widehat{\boldsymbol{u}}_\theta(x_j)\right)\right\|_2^2.
-$$
+```
 
 The classical reference is used only after optimization. This separation makes
 the residual loss and the post-training accuracy audit explicit.
@@ -69,30 +69,30 @@ Three small problems are included.
 
 ### Damped rotating mode
 
-$$
+```math
 \boldsymbol{u}'(x)=
 \begin{bmatrix}-2 & -20\\ 20 & -2\end{bmatrix}\boldsymbol{u}(x),
 \qquad \boldsymbol{u}(0)=\begin{bmatrix}1\\0\end{bmatrix}.
-$$
+```
 
 The reference is $\bigl(e^{-2x}\cos(20x),e^{-2x}\sin(20x)\bigr)$.
 
 ### Coupled linear system
 
-$$
+```math
 \boldsymbol{u}'(x)=
 \begin{bmatrix}3 & 5\\ -5 & -3\end{bmatrix}\boldsymbol{u}(x),
 \qquad \boldsymbol{u}(0)=\begin{bmatrix}0.5\\0\end{bmatrix}.
-$$
+```
 
 The reference is evaluated from the closed form of the matrix exponential.
 
 ### Nonlinear Riccati equation
 
-$$
+```math
 u'-4u+6u^2-\sin(50x)-u\cos(25x)+\tfrac12=0,
 \qquad u(0)=0.75.
-$$
+```
 
 Its independent reference is generated with a fixed-step fourth-order
 Runge–Kutta integrator.
