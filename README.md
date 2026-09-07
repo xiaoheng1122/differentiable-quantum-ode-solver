@@ -1,101 +1,117 @@
-# Differentiable Quantum Circuit Solver for Ordinary Differential Equations
+# Differentiable Quantum ODE Solver — State-Vector Validation
 
-This is the final local release package for the PRA differentiable quantum
-circuit (DQC) study.  It contains three mature differential-equation examples
-that can be validated on a local ideal state-vector simulator:
+This release is intentionally small. The executable content is exactly one
+Python file and one Jupyter Notebook; neither imports the historical project
+tree, archived result folders, or local helper modules.
 
-1. a high-frequency damped oscillation (`lambda=20`);
-2. a two-state strongly coupled linear system; and
-3. a nonautonomous nonlinear Riccati equation.
+## Files
 
-The convergent--divergent nozzle experiment is deliberately outside V0.  Its
-history remains in the earlier patch folders, but it is not a release example
-or an accuracy gate here.
+- `differentiable_ode_solver.py` is the complete command-line implementation.
+  Its `auto` backend selects the Torch state-vector path when PyTorch is
+  available and otherwise uses the dependency-light NumPy state-vector
+  simulator. If `pyqpanda3` is available, `--backend pyqpanda3` evaluates the
+  same circuit with OriginQ's `CPUQVM`.
+- `differentiable_ode_solver.ipynb` is an executable companion. It explains the
+  construction in Markdown, runs all three examples, prints the error table,
+  and draws the comparison figure.
 
-## Scope
+The README is repository metadata only; the two files above are the complete
+reproducible solver deliverables.
 
-- Python 3.10+ with `pyqpanda3`, NumPy, SciPy, PyTorch and Matplotlib;
-- local ideal statevector only; no API key, cloud job or real QPU;
-- exact/classical trajectories are post-training checks, never training labels;
-- all 1001 holdout values are recomputed with native pyqpanda3;
-- one foreground compute process at a time and no dense full-unitary materialisation.
+## Run the Python file
 
-## Quick start
+The default path needs NumPy. Matplotlib is needed only for a saved figure.
 
-Create a Python 3.10+ environment and install the release dependencies:
-
-```powershell
-python -m pip install -r requirements.txt
+```bash
+python -m pip install numpy matplotlib
+python differentiable_ode_solver.py --plot
 ```
 
-Run from this V0 directory with the shared environment:
+The command trains the three cases using ODE residuals and the initial value,
+then reports the post-training comparison with a classical reference. A single
+case or a shorter smoke run can be selected as follows:
 
-```powershell
-python example/DQC/run_all.py --backend native --profile smoke --run-prefix smoke_v0
+```bash
+python differentiable_ode_solver.py --case coupled --steps 20 --points 16
+python differentiable_ode_solver.py --backend pyqpanda3 --case lambda20
 ```
 
-For the formal budgets, run the three cases separately so each archive has a
-clear run id:
+The native command requires a working `pyqpanda3` installation. It does not
+require an API key, a cloud job, or a real quantum processor.
 
-```powershell
-python example/DQC/run_damped_oscillation.py --backend native --profile standard --run-id lambda20_v0
-python example/DQC/run_coupled_linear.py --backend native --profile standard --run-id coupled_v0
-python example/DQC/run_riccati.py --backend native --profile standard --run-id riccati_v0
-```
+## Run the Notebook
 
-`--backend torch` is a deterministic complex128 statevector mirror for
-development.  The standard profile uses 6 qubits, depth 5, floating boundary
-handling, Adam followed by scaled L-BFGS, and the parameters recorded in
-`config/pra_dqc_v0.json`.
+Open `differentiable_ode_solver.ipynb` in Jupyter and execute all cells. The
+Notebook searches for the sibling Python file, loads its definitions, and then
+executes a deterministic local state-vector run. It therefore starts from a
+clean checkout without the original multi-directory package.
 
-## Package map
+## Method
 
-```text
-pyqpanda-algorithm/       OriginQ-compatible DQC core and pyqpanda3 statevector
-example/DQC/v0_runner.py  shared training, native parity and classical audit
-example/DQC/run_*.py      one entry point per equation and a sequential main
-notebooks/                 Jupytext Python and paired .ipynb notebook
-docs/                      Markdown and LaTeX/PDF library description
-figures/latest/            figures used by the library description
-results/runs/              retained formal and review result archives (NPZ/CSV)
-tests/test_v0.py           lightweight release checks
-```
+For each output component, the circuit expectation is denoted by
+\(f_\theta(x)\). The floating initial-value transform is
 
-The notebook defaults to loading the archived evidence.  Set
-`RUN_EXPERIMENTS=True` in `notebooks/PRA_DQC_V0.py` for a small smoke run.
+\[
+\widehat u_\theta(x)=u_0+f_\theta(x)-f_\theta(x_0),
+\]
 
-The local QA pass is recorded in `VERSION_MANIFEST.json`: five focused tests
-passed, and all three cases completed in both native and Torch smoke profiles.
-The smoke archives use `review_native_v0_20260905_*` and
-`review_torch_v0_20260905_*` run IDs and do not replace the retained formal
-records below.
+so the boundary value is satisfied by construction. The input is encoded by a
+Chebyshev tower,
 
-## Current evidence
+\[
+\phi_q(x)=2(q+1)\arccos(x), \qquad q=0,\ldots,n-1,
+\]
 
-| Case | Aggregate RMSE | Maximum absolute error | Classical check |
-| --- | ---: | ---: | --- |
-| lambda=20 damped oscillation | 4.772e-5 | 1.653e-4 | analytic solution and RK4 |
-| coupled linear system | 1.316e-5 | 2.550e-5 | analytic matrix solution and RK4 |
-| Riccati nonlinear equation | 3.058e-3 | 6.508e-3 | DOP853 and RK4 |
+followed by `RZ-RX-RZ` rotations and a nearest-neighbour CNOT chain. The
+observable is the total \(Z\)-magnetization. The coordinate derivative is
+obtained from the RY parameter-shift identity, not from a finite-difference
+grid:
 
-These are retained, fixed-seed local records.  They demonstrate a working
-statevector DQC implementation, not a claim of quantum speedup or hardware
-advantage.  The upload-ready library description, equations, usage contract
-and figure links are in
-[`docs/PRA_DQC_V0_GitHub_Library_Description.md`](docs/PRA_DQC_V0_GitHub_Library_Description.md).
+\[
+\partial_x f_\theta(x)=\sum_q \frac{\partial\phi_q}{\partial x}
+\frac{f_\theta(\phi_q+\pi/2)-f_\theta(\phi_q-\pi/2)}{2}.
+\]
 
-The same description is available as editable LaTeX source
-[`PRA_DQC_V0_GitHub_Library_Description.tex`](docs/PRA_DQC_V0_GitHub_Library_Description.tex)
-and compiled
-[`PDF`](docs/PRA_DQC_V0_GitHub_Library_Description.pdf).
+With collocation coordinates \(x_j\), training minimizes
 
-The coupled headline is a disclosed positive-scaled L-BFGS continuation; its
-independent control archive (`results/runs/coupled_regular_s23_20260904`) has
-aggregate RMSE `2.673e-5`.
+\[
+\mathcal L(\theta)=\frac{1}{N}\sum_j
+\left\|R\!\left(x_j,\widehat{\boldsymbol u}_\theta(x_j),
+\partial_x\widehat{\boldsymbol u}_\theta(x_j)\right)\right\|_2^2,
+\]
 
-## Review and upload gate
+where \(R\) is the equation residual. The classical trajectory is not used
+inside this loss. It is generated after training for an independent audit.
 
-The package is intentionally left local for review.  Inspect the figures,
-metrics, source and notebook first.  No GitHub branch, remote repository or
-cloud service was changed while preparing V0.
+The included equations are:
+
+1. Damped rotation: \(\boldsymbol u'=\begin{bmatrix}-2&-20\\20&-2\end{bmatrix}\boldsymbol u\), \(\boldsymbol u(0)=(1,0)\).
+2. Coupled linear system: \(\boldsymbol u'=\begin{bmatrix}3&5\\-5&-3\end{bmatrix}\boldsymbol u\), \(\boldsymbol u(0)=(0.5,0)\).
+3. Nonlinear Riccati equation: \(u'-4u+6u^2-\sin(50x)-u\cos(25x)+1/2=0\), \(u(0)=0.75\).
+
+The first two references are closed forms. The Riccati reference is produced
+with an independent fixed-step RK4 integrator. Metrics include residual RMS,
+aggregate RMSE, component RMSE, and maximum absolute error.
+
+## OriginQ integration
+
+The file has no imports from `pyqpanda_alg` and can be copied into an OriginQ
+algorithm repository as a standalone example. The optional `pyqpanda3` branch
+uses `CPUQVM`, `VQCircuit`, `RY`, `RZ`, `RX`, and `CNOT` with the current QPanda3
+calling convention. The NumPy branch is useful for a dependency-light review;
+the two branches share the same feature map, ansatz, observable, and
+parameter-shift derivative.
+
+## References
+
+[1] O. Kyriienko, A. E. Paine, and V. E. Elfving, “Solving nonlinear
+differential equations with differentiable quantum circuits,” *Physical Review
+A* **103**, 052416 (2021). DOI: [10.1103/PhysRevA.103.052416](https://doi.org/10.1103/PhysRevA.103.052416).
+
+[2] OriginQ, “QPanda3 documentation,” public documentation repository,
+[github.com/OriginQ/QPanda3-doc](https://github.com/OriginQ/QPanda3-doc).
+
+[3] A. Kandala *et al.*, “Hardware-efficient variational quantum eigensolver
+for small molecules and quantum magnets,” *Nature* **549**, 242–246 (2017).
+DOI: [10.1038/nature23879](https://doi.org/10.1038/nature23879).
 
