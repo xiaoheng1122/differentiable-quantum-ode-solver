@@ -65,37 +65,37 @@ the residual loss and the post-training accuracy audit explicit.
 
 ## Differential-equation benchmarks
 
-Three small problems are included:
+Three small problems are included.
 
-1. **Damped rotating mode**
+### Damped rotating mode
 
-   $$
-   \boldsymbol{u}'(x)=
-   \begin{bmatrix}-2 & -20\\ 20 & -2\end{bmatrix}\boldsymbol{u}(x),
-   \qquad \boldsymbol{u}(0)=\begin{bmatrix}1\\0\end{bmatrix}.
-   $$
+$$
+\boldsymbol{u}'(x)=
+\begin{bmatrix}-2 & -20\\ 20 & -2\end{bmatrix}\boldsymbol{u}(x),
+\qquad \boldsymbol{u}(0)=\begin{bmatrix}1\\0\end{bmatrix}.
+$$
 
-   The reference is $\bigl(e^{-2x}\cos(20x),e^{-2x}\sin(20x)\bigr)$.
+The reference is $\bigl(e^{-2x}\cos(20x),e^{-2x}\sin(20x)\bigr)$.
 
-2. **Coupled linear system**
+### Coupled linear system
 
-   $$
-   \boldsymbol{u}'(x)=
-   \begin{bmatrix}3 & 5\\ -5 & -3\end{bmatrix}\boldsymbol{u}(x),
-   \qquad \boldsymbol{u}(0)=\begin{bmatrix}0.5\\0\end{bmatrix}.
-   $$
+$$
+\boldsymbol{u}'(x)=
+\begin{bmatrix}3 & 5\\ -5 & -3\end{bmatrix}\boldsymbol{u}(x),
+\qquad \boldsymbol{u}(0)=\begin{bmatrix}0.5\\0\end{bmatrix}.
+$$
 
-   The reference is evaluated from the closed form of the matrix exponential.
+The reference is evaluated from the closed form of the matrix exponential.
 
-3. **Nonlinear Riccati equation**
+### Nonlinear Riccati equation
 
-   $$
-   u'-4u+6u^2-\sin(50x)-u\cos(25x)+\tfrac12=0,
-   \qquad u(0)=0.75.
-   $$
+$$
+u'-4u+6u^2-\sin(50x)-u\cos(25x)+\tfrac12=0,
+\qquad u(0)=0.75.
+$$
 
-   Its independent reference is generated with a fixed-step fourth-order
-   Runge–Kutta integrator.
+Its independent reference is generated with a fixed-step fourth-order
+Runge–Kutta integrator.
 
 The reported metrics are the training residual, residual RMS on the holdout
 grid, aggregate RMSE, component RMSE, and maximum absolute error.
@@ -155,5 +155,4 @@ A* **103**, 052416 (2021). DOI:
 [3] A. Kandala *et al.*, “Hardware-efficient variational quantum eigensolver
 for small molecules and quantum magnets,” *Nature* **549**, 242–246 (2017).
 DOI: [10.1038/nature23879](https://doi.org/10.1038/nature23879).
-
 
